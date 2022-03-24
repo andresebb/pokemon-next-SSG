@@ -3,6 +3,8 @@ import { useRouter } from 'next/router'
 import { pokeApi } from '../../api';
 import { Layout } from '../../components/layout'
 import { Pokemon } from '../../interfaces';
+import { Button, Card, Container, Grid, Text } from '@nextui-org/react';
+import Image from 'next/image';
 
 interface Props {
   pokemon: any;
@@ -15,7 +17,61 @@ const PokemonPage: NextPage<Props> = ({ pokemon }) => {
 
   return (
     <Layout title="EL pokemon">
-      <h1>{pokemon.name}</h1>
+      <Grid.Container css={{ marginTop: "5px" }} gap={2}>
+        <Grid xs={12} sm={4}>
+          <Card hoverable css={{
+            padding: "30px"
+          }}>
+            <Card.Body>
+              <Card.Image
+                src={pokemon.sprites.other?.dream_world.front_default || "/no-image"}
+                width="100%"
+                height={200}
+              />
+            </Card.Body>
+          </Card>
+        </Grid>
+        <Grid xs={12} sm={8}>
+          <Card>
+            <Card.Header css={{ display: "flex", justifyContent: "space-between" }}>
+              <Text h1 transform='capitalize'>{pokemon.name}</Text>
+              <Button color="gradient" ghost>
+                Guardar en favoritos
+              </Button>
+            </Card.Header>
+
+            <Card.Body>
+              <Text size={30}>Sprites:</Text>
+              <Container display='flex' direction='row' justify='space-around' gap={0}>
+                <Image
+                  src={pokemon.sprites.front_default}
+                  alt={pokemon.name}
+                  width="100"
+                  height={100}
+                />
+                <Image
+                  src={pokemon.sprites.back_default}
+                  alt={pokemon.name}
+                  width="100"
+                  height={100}
+                />
+                <Image
+                  src={pokemon.sprites.front_shiny}
+                  alt={pokemon.name}
+                  width="100"
+                  height={100}
+                />
+                <Image
+                  src={pokemon.sprites.back_shiny}
+                  alt={pokemon.name}
+                  width="100"
+                  height={100}
+                />
+              </Container>
+            </Card.Body>
+          </Card>
+        </Grid>
+      </Grid.Container>
     </Layout>
   )
 }
@@ -30,6 +86,8 @@ const PokemonPage: NextPage<Props> = ({ pokemon }) => {
 export const getStaticPaths: GetStaticPaths = async (ctx) => {
   const pokemons151 = [...Array(151)].map((value, index) => `${index + 1}`);
 
+
+  //Creamos 151 pages con el id de cada una
   return {
     paths: pokemons151.map(id => (
       {
@@ -41,6 +99,11 @@ export const getStaticPaths: GetStaticPaths = async (ctx) => {
 }
 
 //Sucede Despues
+
+// GetStaticProps solo se pueden usar en Pages
+// Solo usar cuando estes seguro que el contenido sera static
+// Esta funcion solo se ejecuta del lado del servidor,
+// Solo se ejecuta en build time
 export const getStaticProps: GetStaticProps = async ({ params }) => {
 
   const { id } = params as { id: string };

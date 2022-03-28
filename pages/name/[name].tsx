@@ -7,7 +7,7 @@ import confetti from "canvas-confetti"
 
 import { pokeApi } from '../../api';
 import { Layout } from '../../components/layout'
-import { Pokemon } from '../../interfaces';
+import { Pokemon, PokemonListResponse } from '../../interfaces';
 import { localFavorites } from '../../utils';
 import Image from 'next/image';
 
@@ -15,7 +15,8 @@ interface Props {
   pokemon: any;
 }
 
-const PokemonPage: NextPage<Props> = ({ pokemon }) => {
+
+const PokemonByNamePage: NextPage<Props> = ({ pokemon }) => {
   const [isInFavorites, setIsInFavorites] = useState(localFavorites.existInFavorites(pokemon.id))
 
   console.log(typeof window)
@@ -102,37 +103,26 @@ const PokemonPage: NextPage<Props> = ({ pokemon }) => {
 }
 
 
-//La Magia de SSG es que obtenemos toda la data al momento de hacer build de nuestra app
-
-//Sucede primero
-
-//This is for dynamic routes
-//Estamos definiendo esas  pages de pokemones
 export const getStaticPaths: GetStaticPaths = async (ctx) => {
-  const pokemons151 = [...Array(151)].map((value, index) => `${index + 1}`);
 
+  const { data } = await pokeApi.get<PokemonListResponse>('/pokemon?limit=151')
+  const pokemonsName151: string[] = data.results.map((pokemon) => pokemon.name)
 
-  //Creamos 151 pages con el id de cada una
   return {
-    paths: pokemons151.map(id => (
+    paths: pokemonsName151.map((name: string) => (
       {
-        params: { id }
+        params: { name: name }
       }
     )),
     fallback: false // false or 'blocking'
   };
 }
 
-//Sucede Despues
 
-// GetStaticProps solo se pueden usar en Pages
-// Solo usar cuando estes seguro que el contenido sera static
-// Esta funcion solo se ejecuta del lado del servidor,
-// Solo se ejecuta en build time
 export const getStaticProps: GetStaticProps = async ({ params }) => {
 
-  const { id } = params as { id: string };
-  const { data } = await pokeApi.get<Pokemon>(`/pokemon/${id}`)
+  const { name } = params as { name: string };
+  const { data } = await pokeApi.get<Pokemon>(`/pokemon/${name}`)
 
 
   return {
@@ -142,4 +132,4 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   }
 }
 
-export default PokemonPage
+export default PokemonByNamePage

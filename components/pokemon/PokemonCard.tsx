@@ -11,7 +11,7 @@ export const PokemonCard: NextPage<Props> = ({ pokemon: { img, name, id } }) => 
   const router = useRouter()
 
   const onClick = () => {
-    router.push(`/pokemon/${id}`)
+    router.push(`/name/${name}`)
   }
 
 

@@ -4,6 +4,7 @@ import { pokeApi } from '../api';
 import { PokemonListResponse, SmallPokemon } from '../interfaces';
 import { Grid, } from '@nextui-org/react';
 import { PokemonCard } from '../components/pokemon';
+import Image from 'next/image';
 
 interface Props {
   pokemons: SmallPokemon[]
@@ -13,13 +14,20 @@ const Home: NextPage<Props> = ({ pokemons }) => {
 
   return (
     <Layout title="Mi app pokemona">
-      <Grid.Container gap={2} justify="flex-start">
-        {
-          pokemons.map((pokemon) => (
-            <PokemonCard key={pokemon.id} pokemon={pokemon} />
-          ))
-        }
-      </Grid.Container>
+      <>
+        <Image
+          src="/img/banner.png"
+          width={200}
+          height={150}
+        />
+        <Grid.Container gap={2} justify="flex-start">
+          {
+            pokemons.map((pokemon) => (
+              <PokemonCard key={pokemon.id} pokemon={pokemon} />
+            ))
+          }
+        </Grid.Container>
+      </>
     </Layout>
   )
 }

@@ -8,7 +8,7 @@ import confetti from "canvas-confetti"
 import { pokeApi } from '../../api';
 import { Layout } from '../../components/layout'
 import { Pokemon, PokemonListResponse } from '../../interfaces';
-import { localFavorites } from '../../utils';
+import { getPokemonInfo, localFavorites } from '../../utils';
 import Image from 'next/image';
 
 interface Props {
@@ -114,7 +114,7 @@ export const getStaticPaths: GetStaticPaths = async (ctx) => {
         params: { name: name }
       }
     )),
-    fallback: false // false or 'blocking'
+    fallback: "blocking" // false or 'blocking'
   };
 }
 
@@ -122,18 +122,26 @@ export const getStaticPaths: GetStaticPaths = async (ctx) => {
 export const getStaticProps: GetStaticProps = async ({ params }) => {
 
   const { name } = params as { name: string };
-  const { data } = await pokeApi.get<Pokemon>(`/pokemon/${name}`)
 
-  const pokemon = {
-    id: data.id,
-    name: data.name,
-    sprites: data.sprites
+  const pokemon = await getPokemonInfo(name)
+
+  //Esto nos ayuda al ISG, si no existe el id se manda a la pagina principal;
+  if (!pokemon) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false
+      }
+    }
   }
 
+  //revalidate, regenera la pagina cada tanto tiempo (ISR)
+  //Incremental Status Regeneration
   return {
     props: {
       pokemon
-    }
+    },
+    revalidate: 86400
   }
 }
 

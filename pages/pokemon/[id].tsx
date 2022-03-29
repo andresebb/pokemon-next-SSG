@@ -8,7 +8,7 @@ import confetti from "canvas-confetti"
 import { pokeApi } from '../../api';
 import { Layout } from '../../components/layout'
 import { Pokemon } from '../../interfaces';
-import { localFavorites } from '../../utils';
+import { getPokemonInfo, localFavorites } from '../../utils';
 import Image from 'next/image';
 
 interface Props {
@@ -17,8 +17,6 @@ interface Props {
 
 const PokemonPage: NextPage<Props> = ({ pokemon }) => {
   const [isInFavorites, setIsInFavorites] = useState(localFavorites.existInFavorites(pokemon.id))
-
-  console.log(typeof window)
 
 
   const onToggleFavorite = () => {
@@ -119,7 +117,7 @@ export const getStaticPaths: GetStaticPaths = async (ctx) => {
         params: { id }
       }
     )),
-    fallback: false // false or 'blocking'
+    fallback: "blocking" // false or 'blocking'
   };
 }
 
@@ -132,18 +130,28 @@ export const getStaticPaths: GetStaticPaths = async (ctx) => {
 export const getStaticProps: GetStaticProps = async ({ params }) => {
 
   const { id } = params as { id: string };
-  const { data } = await pokeApi.get<Pokemon>(`/pokemon/${id}`)
 
-  const pokemon = {
-    id: data.id,
-    name: data.name,
-    sprites: data.sprites
+  const pokemon = await getPokemonInfo(id)
+
+
+  //Esto nos ayuda al ISG, si no existe el id se manda a la pagina principal;
+  if (!pokemon) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false
+      }
+    }
   }
 
+
+  //revalidate, regenera la pagina cada tanto tiempo (ISR)
+  //Incremental Status Regeneration
   return {
     props: {
       pokemon
-    }
+    },
+    revalidate: 86400
   }
 }
 
